@@ -193,7 +193,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                     <CardContent className="h-[calc(100%-120px)]">
                       <ScrollArea className="h-full">
                         <div className="space-y-4 text-sm">
-                          {mockTranscript.split('\n').filter(line => line.trim()).map((line, index) => (
+                          {mockTranscript.split('\n').filter((line: string) => line.trim()).map((line, index) => (
                             <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                               {line}
                             </div>
