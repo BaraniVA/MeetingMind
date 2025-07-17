@@ -49,7 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(false);
 
       // Create user profile if signing up
-      if (event === 'SIGNED_UP' && session?.user) {
+      if (event === 'INITIAL_SESSION' && session?.user) {
         await createUserProfile(session.user);
       }
     });
