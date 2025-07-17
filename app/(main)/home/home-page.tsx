@@ -113,8 +113,37 @@ export default function HomePage() {
 
       if (error) {
         console.error('Error creating audio file record:', error);
-      } else {
-        setAudioFiles(prev => [data, ...prev]);
+        return;
+      }
+
+      setAudioFiles(prev => [data, ...prev]);
+
+      // Start transcription process
+      try {
+        const response = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ audioFileId: data.id }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to start transcription');
+        }
+
+        // Refresh the audio files to get updated status
+        fetchAudioFiles();
+      } catch (transcriptionError) {
+        console.error('Error starting transcription:', transcriptionError);
+        // Update the file status to failed in the UI
+        setAudioFiles(prev => 
+          prev.map(f => 
+            f.id === data.id 
+              ? { ...f, transcription_status: 'failed' as const }
+              : f
+          )
+        );
       }
     } catch (error) {
       console.error('Error uploading file:', error);

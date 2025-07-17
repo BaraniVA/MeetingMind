@@ -1,0 +1,22 @@
+name: Keep Transcription Service Alive
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  ping-service:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Ping Transcription Service
+      run: |
+        curl -f ${{ secrets.TRANSCRIPTION_SERVICE_URL }}/health || exit 1
+        echo "Service is alive!"
+      continue-on-error: true
+      
+    - name: Log Status
+      run: |
+        echo "Keep-alive ping completed at $(date)"
