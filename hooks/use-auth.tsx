@@ -48,8 +48,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Create user profile if signing up
-      if (event === 'INITIAL_SESSION' && session?.user) {
+      // Create user profile for ALL auth events (not just INITIAL_SESSION)
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
         await createUserProfile(session.user);
       }
     });
@@ -59,22 +59,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const createUserProfile = async (user: User) => {
     try {
+      // Use upsert to handle existing users
       const { error } = await supabase
         .from('users')
-        .insert([
-          {
-            id: user.id,
-            email: user.email!,
-            name: user.user_metadata?.name || '',
-            settings: {},
-          },
-        ]);
-      
+        .upsert({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || user.user_metadata?.full_name || user.email!,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'id'
+        });
+
       if (error) {
         console.error('Error creating user profile:', error);
+      } else {
+        console.log('User profile created/updated successfully');
       }
     } catch (error) {
-      console.error('Error creating user profile:', error);
+      console.error('Error in createUserProfile:', error);
     }
   };
 
